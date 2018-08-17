@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * API for interacting with a deck of cards.
@@ -17,10 +19,22 @@ public interface Deck<E extends Card> {
 	List<E> getCards();
 	
 	/**
+	 * Getter method for the deck's current shuffler.
+	 * @return A method that mutates a list of cards
+	 */
+	Consumer<List<E>> getShuffler();
+	
+	/**
+	 * Specify how the deck should shuffle itself. Enter an argument of null to reset the shuffle back to the default.
+	 * @param shuffler Function that mutates a list of cards
+	 */
+	void setShuffleFunction(Consumer<List<E>> shuffler);
+	
+	/**
 	 * Operation that shuffles the deck's contents.
 	 */
 	default void shuffle(){
-		Collections.shuffle(getCards());
+		Optional.ofNullable(getShuffler()).orElse(Collections::shuffle).accept(getCards());
 	}
 	
 	

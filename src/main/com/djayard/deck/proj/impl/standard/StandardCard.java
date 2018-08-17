@@ -60,7 +60,12 @@ public class StandardCard implements Card {
 	
 	@Override
 	public String code() {
-		return suit.name() + " _ " + value.name();
+		return suit.name() + "_" + value.name();
+	}
+	
+	@Override
+	public String toString() {
+		return value.name() + " OF " + suit.name() + "S";
 	}
 	
 	public SUIT getSuit() {

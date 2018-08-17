@@ -47,6 +47,17 @@ public class StandardDeckTest {
 	}
 	
 	@Test
+	public void drawMultiple() {
+		StandardDeck deck = new StandardDeck();
+		final int initialSize = deck.size();
+		final int numberToDraw = 14;
+		List<StandardCard> cards = deck.draw(numberToDraw);
+		
+		assertEquals(cards.size(), numberToDraw);
+		assertEquals(deck.size(), initialSize-numberToDraw);
+	}
+	
+	@Test
 	public void splitDeck(){
 		StandardDeck deck = new StandardDeck(shortCardList());
 		List<StandardDeck> subs = deck.splitDeck();

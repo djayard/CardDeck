@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+
 import com.djayard.deck.proj.Deck;
 
 
@@ -15,6 +18,7 @@ import com.djayard.deck.proj.Deck;
 public class StandardDeck implements Deck<StandardCard>{
 	
 	private List<StandardCard> cards;
+	private Consumer<List<StandardCard>> shuffler;
 	
 	/**
 	 * Default constructor. The deck is initialized with the 52 cards, and the cards
@@ -99,13 +103,27 @@ public class StandardDeck implements Deck<StandardCard>{
 		return cards;
 	}
 	
+	@Override
+	public Consumer<List<StandardCard>> getShuffler() {
+		return shuffler;
+	}
+	
+	@Override
+	public void setShuffleFunction(Consumer<List<StandardCard>> shuffler) {
+		this.shuffler = shuffler;
+	}
+	
 	/**
-	 * Shuffle implementation following the Fisher-Yates algorithm.
+	 * If shuffler is non-null, shuffler is called with this deck's cards. Otherwise, this deck's cards are shuffled according
+	 * to the Fisher-Yates algorithm.
 	 */
 	@Override
 	public void shuffle() {
-		final int size = size();
-		final List<StandardCard> startingPermutation = this.cards;
+		Optional.ofNullable(shuffler).orElse(StandardDeck::fisherYatesShuffle).accept(cards);
+	}
+	
+	private static void fisherYatesShuffle(List<StandardCard> cards){
+		final int size = cards.size();
 		StandardCard[] newPermutation = new StandardCard[size];
 		
 		for(int i = 0; i < size; ++i){
@@ -113,10 +131,23 @@ public class StandardDeck implements Deck<StandardCard>{
 			if(j != i){
 				newPermutation[i] = newPermutation[j];
 			}
-			newPermutation[j] = startingPermutation.get(i);
+			newPermutation[j] = cards.get(i);
 		}
 		
-		cards = Arrays.asList(newPermutation);
+		cards.clear();
+		Arrays.stream(newPermutation).forEach(cards::add);
+	}
+	
+	@Override
+	public String toString() {
+		return cards.toString();
+	}
+	
+	/**
+	 * Simple main for toying with the class.
+	 */
+	public static void main(String... args){
+		System.out.println(new StandardDeck());
 	}
 	
 	
