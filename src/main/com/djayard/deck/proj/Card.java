@@ -1,7 +1,7 @@
 package com.djayard.deck.proj;
 
 /**
- * Simply interface that requires cards in a deck to report an identifier.
+ * Simple interface that requires cards in a deck to report an identifier.
  */
 public interface Card {
 	

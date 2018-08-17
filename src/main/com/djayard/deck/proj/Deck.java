@@ -1,8 +1,11 @@
 package com.djayard.deck.proj;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -10,12 +13,52 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
- * API for interacting with a deck of cards.
+ * Base class for interacting with a deck of cards.
  */
-public abstract class Deck<E extends Card> {
+public class Deck<E extends Card> {
 	
 	protected List<E> cards;
-	protected Consumer<List<E>> shuffler = Collections::shuffle;
+	protected Consumer<List<E>> shuffler;
+	
+	/**
+	 * Default constructor. The deck is initialized without any cards.
+	 */
+	public Deck(){
+		this(Collections.emptyList());
+	}
+	
+	/**
+	 * The deck is initialized such that it can offer the cards passed in.
+	 * @param cards The cards that should be available in the deck.
+	 */
+	public Deck(Collection<E> cards){
+		this(cards, false);
+	}
+	
+	/**
+	 * The deck is initialized such that it can offer the cards passed in.
+	 * @param cards The cards that should be available in the deck.
+	 * @param doShuffle True if the cards should be shuffled
+	 */
+	public Deck(Collection<E> cards, boolean doShuffle) {
+		this(cards, doShuffle, Collections::shuffle);
+	}
+	
+	/**
+	 * The deck is initialized such that it can offer the cards passed in.
+	 * @param cards The cards that should be available in the deck.
+	 * @param doShuffle True if the cards should be shuffled
+	 * @param shuffler A function that mutates a list of cards.
+	 */
+	public Deck(Collection<E> cards, boolean doShuffle, Consumer<List<E>> shuffler) {
+		//LinkedList used to reduce cost of remove and draw operations
+		this.cards = new LinkedList<>(cards);
+		this.shuffler = shuffler;
+		if(doShuffle){
+			shuffle();
+		}
+	}
+	
 	
 	/**
 	 * Operation that shuffles the deck's contents.
@@ -73,7 +116,7 @@ public abstract class Deck<E extends Card> {
 	 *   the deck's size is less than numRequested.
 	 */
 	public List<E> draw(int numRequested, Boolean permissive) throws IllegalArgumentException {
-		if( !permissive && numRequested > size()){
+		if( Boolean.FALSE.equals(permissive) && numRequested > size()){
 			throw new IllegalArgumentException(String.format("Not enough cards in the deck to draw %d.%n", numRequested));
 		}
 		
@@ -94,7 +137,7 @@ public abstract class Deck<E extends Card> {
 	}
 	
 	/**
-	 * Removes the card at the specificed index from the deck.
+	 * Removes the card at the specified index from the deck.
 	 * @param index A non-negative integer.
 	 * @return The card formerly at the specified index, or null if no such card is available.
 	 */
@@ -118,9 +161,10 @@ public abstract class Deck<E extends Card> {
 	 * @return The index of a card that satisfies the predicate, or -1.
 	 */
 	public int findCard(int index, Predicate<? super E> necessaryCondition) {
-		for(int i = index; i < size(); ++i){
-			if( necessaryCondition.test(cards.get(i)) ){
-				return  i;
+		ListIterator<E> iterator = getCards().listIterator(index);
+		while(iterator.hasNext()){
+			if( necessaryCondition.test(iterator.next()) ){
+				return  iterator.previousIndex();
 			}
 		}
 		
@@ -161,36 +205,44 @@ public abstract class Deck<E extends Card> {
 	}
 	
 	/**
-	 * Creates two partial decks by cutting this deck in half.
+	 * Creates two partial decks by cutting this deck in half. This method calls on splitDeck(int...); overwrite
+	 * that method to change the concrete type of the created decks.
 	 * @return A List of 2 partial decks created from splitting this deck.
 	 */
-	public abstract List<Deck<E>> splitDeck();
+	public List<Deck<E>> splitDeck(){
+		return splitDeck(size()/2);
+	}
 	
 	/**
 	 * Method for cutting the deck.
 	 * @param breakpoints Indexes (not inclusive) at which to split the deck.
 	 * @return A List of partial decks created from splitting this deck.
 	 */
-	public abstract List<Deck<E>> splitDeck(int...breakpoints);
+	public List<Deck<E>> splitDeck(int...breakpoints){
+		return splitDeck(Deck<E>::new, this, breakpoints);
+	}
 	
 	/**
-	 * Assister method to allow subclasses to easily implemented the public splitDeck methods.
-	 * @param subDeckConstructor Function that accepts a list of cards and returns a new deck.
+	 * Split a deck such that all the children are initialized in a way specified by you.
+	 * @param deckConstructor A function that create a new deck instance from a list of cards.
+	 * @param sourceDeck The deck to split.
 	 * @param breakpoints Indexes (not inclusive) at which to split the deck.
-	 * @return A List of partial decks created from splitting this deck.
+	 * @return A list of decks created by splitting the passed in deck
 	 */
-	protected List<Deck<E>> splitDeck(Function<List<E>, Deck<E>> subDeckConstructor, int... breakpoints){
-		List<Deck<E>> newDecks = new ArrayList<>(breakpoints.length + 1);
+	public static <T extends Card, U extends Deck<T>> List<U> splitDeck(
+			Function<List<T>, U> deckConstructor, Deck<T> sourceDeck, int... breakpoints){
+		List<U> newDecks = new ArrayList<>(breakpoints.length + 1);
+		List<T> cards = sourceDeck.getCards();
 		
 		int startPoint = 0;
 		for(int i = 0; i < breakpoints.length; ++i){
 			int breakpoint = breakpoints[i];
-			newDecks.add(subDeckConstructor.apply(cards.subList(startPoint, breakpoint)));
+			newDecks.add(deckConstructor.apply(cards.subList(startPoint, breakpoint)));
 			startPoint = breakpoint;
 		}
 		
-		if(startPoint < size() - 1){
-			newDecks.add(subDeckConstructor.apply(cards.subList(startPoint, size())));
+		if(startPoint < cards.size() - 1){
+			newDecks.add(deckConstructor.apply(cards.subList(startPoint, cards.size())));
 		}
 		
 		return newDecks;

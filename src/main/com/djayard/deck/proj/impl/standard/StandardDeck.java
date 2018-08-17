@@ -2,75 +2,68 @@ package com.djayard.deck.proj.impl.standard;
 
 import static com.djayard.deck.proj.impl.standard.StandardCard.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+
 import com.djayard.deck.proj.Deck;
 
 
 /**
- * Concrete class for managing a standard 52-card deck.
+ * Class for managing a standard 52-card deck.
  */
 public class StandardDeck extends Deck<StandardCard>{
+	
+	//Overwrite of base class' default.
+	{
+		shuffler = StandardDeck::fisherYatesShuffle;
+	}
 	
 	/**
 	 * Default constructor. The deck is initialized with the 52 cards, and the cards
 	 * are shuffled.
 	 */
 	public StandardDeck(){
-		this(true,true);
+		this(true);
+		
 	}
 	
 	/**
 	 * Constructor that allows a partial deck to be created.
 	 */
 	public StandardDeck(Collection<StandardCard> cards){
-		this.cards = new ArrayList<>(cards);
+		super(cards);
 	}
 	
 	/**
-	 * Creates a deck instances and allows the caller to control whether or not
-	 * the deck is initialized with 52 cards or shuffled.
-	 * @param doInitialize If true, the deck is filled with the standard 52 cards. Otherwise, the deck is empty.
-	 * @param doShuffle If doInitialized is true and doShuffle is true, the deck's contents are shuffled.
+	 * Creates a deck and allows the caller to control whether or not
+	 * the deck is shuffled.
+	 * @param doShuffle If true, the deck is shuffled are it's populated with cards.
 	 */
-	public StandardDeck(Boolean doInitialize, Boolean doShuffle){
-		if(doInitialize){
-			initialize(this);
-			if(doShuffle){
-				shuffle();
-			}
-		} else {
-			cards = new ArrayList<>();
-		}
+	public StandardDeck(boolean doShuffle){
+		this(doShuffle, StandardDeck::fisherYatesShuffle);
 		
 	}
 	
-	/**
-	 * Sets the deck's content to be that of a 52-card deck.
-	 * @param deck The deck to modify.
-	 */
-	private static void initialize(StandardDeck deck){
+	public StandardDeck(boolean doShuffle, Consumer<List<StandardCard>> shuffler){
+		this.shuffler = shuffler;
 		SUIT[] suits = SUIT.values();
 		VALUE[] values = VALUE.values();
-		deck.cards = new ArrayList<>(suits.length * values.length);
 		for(SUIT suit:suits){
 			for(VALUE value:values){
-				deck.cards.add(new StandardCard(suit,value));
+				cards.add(new StandardCard(suit,value));
 			}
 		}
-	}
-	
-	@Override
-	public List<Deck<StandardCard>> splitDeck() {
-		return splitDeck(StandardDeck::new, size()/2);
+		if(doShuffle){
+			shuffle();
+		}
 	}
 	
 	@Override
 	public List<Deck<StandardCard>> splitDeck(int... breakpoints) {
-		return splitDeck(StandardDeck::new, breakpoints);
+		return splitDeck(StandardDeck::new, this, breakpoints);
 	}
 	
 	/**
@@ -82,7 +75,7 @@ public class StandardDeck extends Deck<StandardCard>{
 		Optional.ofNullable(shuffler).orElse(StandardDeck::fisherYatesShuffle).accept(cards);
 	}
 	
-	private static void fisherYatesShuffle(List<StandardCard> cards){
+	static void fisherYatesShuffle(List<StandardCard> cards){
 		final int size = cards.size();
 		StandardCard[] newPermutation = new StandardCard[size];
 		
