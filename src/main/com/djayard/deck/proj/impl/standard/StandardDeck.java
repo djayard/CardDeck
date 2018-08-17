@@ -7,18 +7,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-
 import com.djayard.deck.proj.Deck;
 
 
 /**
  * Concrete class for managing a standard 52-card deck.
  */
-public class StandardDeck implements Deck<StandardCard>{
-	
-	private List<StandardCard> cards;
-	private Consumer<List<StandardCard>> shuffler;
+public class StandardDeck extends Deck<StandardCard>{
 	
 	/**
 	 * Default constructor. The deck is initialized with the 52 cards, and the cards
@@ -68,49 +63,14 @@ public class StandardDeck implements Deck<StandardCard>{
 		}
 	}
 	
-	/**
-	 * Creates two partial decks by cutting this deck in half.
-	 * @return A List of 2 partial decks created from splitting this deck.
-	 */
-	public List<StandardDeck> splitDeck(){
-		return splitDeck(size()/2);
-	}
-	
-	/**
-	 * Method for cutting the deck.
-	 * @param breakpoints Indexes (not inclusive) at which to split the deck.
-	 * @return A List of partial decks created from splitting this deck.
-	 */
-	public List<StandardDeck> splitDeck(int... breakpoints){
-		List<StandardDeck> newDecks = new ArrayList<>(breakpoints.length + 1);
-		
-		int startPoint = 0;
-		for(int i = 0; i < breakpoints.length; ++i){
-			int breakpoint = breakpoints[i];
-			newDecks.add(new StandardDeck(cards.subList(startPoint, breakpoint)));
-			startPoint = breakpoint;
-		}
-		
-		if(startPoint < size() - 1){
-			newDecks.add(new StandardDeck(cards.subList(startPoint, size())));
-		}
-		
-		return newDecks;
-	}
-
 	@Override
-	public List<StandardCard> getCards() {
-		return cards;
+	public List<Deck<StandardCard>> splitDeck() {
+		return splitDeck(StandardDeck::new, size()/2);
 	}
 	
 	@Override
-	public Consumer<List<StandardCard>> getShuffler() {
-		return shuffler;
-	}
-	
-	@Override
-	public void setShuffleFunction(Consumer<List<StandardCard>> shuffler) {
-		this.shuffler = shuffler;
+	public List<Deck<StandardCard>> splitDeck(int... breakpoints) {
+		return splitDeck(StandardDeck::new, breakpoints);
 	}
 	
 	/**
@@ -137,6 +97,12 @@ public class StandardDeck implements Deck<StandardCard>{
 		cards.clear();
 		Arrays.stream(newPermutation).forEach(cards::add);
 	}
+	
+	@Override
+	protected List<StandardCard> getCards() {
+		return super.getCards();
+	}
+	
 	
 	@Override
 	public String toString() {

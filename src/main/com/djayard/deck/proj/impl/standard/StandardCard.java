@@ -43,6 +43,16 @@ public class StandardCard implements Card {
 		this.value = value;
 	}
 	
+	/**
+	 * Constructor for setting the required fields.
+	 * @param value An instance of {@link VALUE}.
+	 * @param suit An instance of {@link SUIT}.
+	 */
+	public StandardCard(VALUE value, SUIT suit){
+		this.suit = suit;
+		this.value = value;
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(obj instanceof StandardCard){

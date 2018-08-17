@@ -10,6 +10,8 @@ import java.util.NoSuchElementException;
 
 import org.junit.Test;
 
+import com.djayard.deck.proj.Deck;
+
 
 public class StandardDeckTest {
 
@@ -60,7 +62,7 @@ public class StandardDeckTest {
 	@Test
 	public void splitDeck(){
 		StandardDeck deck = new StandardDeck(shortCardList());
-		List<StandardDeck> subs = deck.splitDeck();
+		List<Deck<StandardCard>> subs = deck.splitDeck();
 		assertEquals(subs.get(0).size(), subs.get(1).size());
 		
 		final int size = deck.size();
@@ -68,8 +70,8 @@ public class StandardDeckTest {
 		
 		//verifying that the split is simple; the cards follow the order from the parent deck
 		for(int i = 0; i < size; ++i){
-			StandardDeck sub = subs.get(i < breakpoint ? 0 : 1);
-			assertEquals(deck.getCards().get(i), sub.getCards().get(i % breakpoint));
+			Deck<StandardCard> sub = subs.get(i < breakpoint ? 0 : 1);
+			assertEquals(deck.peek(i), sub.peek(i % breakpoint));
 		}
 	}
 	
@@ -82,6 +84,19 @@ public class StandardDeckTest {
 		deck.shuffle();
 		
 		confirmMutation(deck.getCards(), originalPermuation);
+	}
+	
+	@Test
+	public void findAndRemove(){
+		StandardDeck deck = new StandardDeck();
+		final int initialSize = deck.size();
+		StandardCard queenOfHearts = new StandardCard(SUIT.HEART, VALUE.QUEEN);
+		int queenPos = deck.findCard(queenOfHearts::equals);
+		assertTrue(  queenPos > -1 );
+		
+		StandardCard removedCard = deck.removeCard(queenPos);
+		assertEquals(queenOfHearts, removedCard);
+		assertEquals(deck.size(), initialSize-1);
 	}
 	
 	private static List<StandardCard> shortCardList(){
