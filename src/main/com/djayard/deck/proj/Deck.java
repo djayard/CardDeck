@@ -146,6 +146,26 @@ public class Deck<E extends Card> {
 	}
 	
 	/**
+	 * Removes all cards that satisfy the specified condition.
+	 * @param necessaryCondition The criteria for removing the card from the deck.
+	 * @return A list of the cards removed. The list may be empty, but it is never null.
+	 */
+	public List<E> removeAll(Predicate<? super E> necessaryCondition){
+		ListIterator<E> iterator = getCards().listIterator();
+		List<E> removedCards = new ArrayList<>();
+		
+		while(iterator.hasNext()){
+			E card = iterator.next();
+			if(necessaryCondition.test(card)){
+				removedCards.add(card);
+				iterator.remove();
+			}
+		}
+		
+		return removedCards;
+	}
+	
+	/**
 	 * Attempts to locate a card that satisfies the predicate.
 	 * @param necessaryCondition Condition that an acceptable card must satisfy.
 	 * @return The index of a card that satisfies the predicate, or -1.
@@ -195,12 +215,12 @@ public class Deck<E extends Card> {
 	
 	/**
 	 * Inject cards into the deck.
-	 * @param returningCards Cards to be added.
 	 * @param start The insertion point for the cards. The element at that position (and all subsequent elements) will be shifted
 	 * over so that they come after the newly inserted cards.
+	 * @param returningCards Cards to be added.
 	 * @return true if the operations succeeds
 	 */
-	public boolean insertCards(List<E> returningCards, int start) {
+	public boolean insertCards(int start, Collection<E> returningCards) {
 		return getCards().addAll(start, returningCards);
 	}
 	

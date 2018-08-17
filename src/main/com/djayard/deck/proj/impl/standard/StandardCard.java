@@ -30,8 +30,8 @@ public class StandardCard implements Card {
 	}
 	
 	
-	private final SUIT suit;
-	private final VALUE value;
+	public final SUIT suit;
+	public final VALUE value;
 	
 	/**
 	 * Constructor for setting the required fields.

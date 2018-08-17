@@ -4,9 +4,12 @@ import static com.djayard.deck.proj.impl.standard.StandardCard.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import org.junit.Test;
 
@@ -16,9 +19,20 @@ import com.djayard.deck.proj.Deck;
 public class StandardDeckTest {
 
 	@Test
-	public void defaultDeckSize(){
+	public void defaultDeck(){
+		final int size = SUIT.values().length * VALUE.values().length;
 		StandardDeck deck = new StandardDeck();
-		assertEquals(deck.size(), SUIT.values().length * VALUE.values().length);
+		assertEquals(deck.size(), size);
+		
+		Set<StandardCard> cardSet = new HashSet<>(deck.size(), 1f);
+		List<StandardCard> drawnCards = deck.draw(size);
+		
+		for(StandardCard card:drawnCards){
+			if(cardSet.contains(card)){
+				fail("The default had a non-unique card!");
+			}
+			cardSet.add(card);
+		}
 	}
 	
 	@Test
@@ -87,6 +101,18 @@ public class StandardDeckTest {
 	}
 	
 	@Test
+	public void find(){
+		StandardDeck deck = new StandardDeck();
+		StandardCard ace = new StandardCard(SUIT.SPADE, VALUE.ACE);
+		List<StandardCard> addToDeck = new ArrayList<>(1);
+		addToDeck.add(ace);
+		
+		deck.insertCards(0, addToDeck);
+		
+		assertEquals(0, deck.findCard(ace::equals));
+	}
+	
+	@Test
 	public void findAndRemove(){
 		StandardDeck deck = new StandardDeck();
 		final int initialSize = deck.size();
@@ -99,12 +125,26 @@ public class StandardDeckTest {
 		assertEquals(deck.size(), initialSize-1);
 	}
 	
+	@Test
+	public void removeAll(){
+		StandardDeck deck = new StandardDeck();
+		final int initialSize = deck.size();
+		final int suitSize = VALUE.values().length;
+		
+		Predicate<StandardCard> isHeart = card -> SUIT.HEART.equals(card.suit);
+		List<StandardCard> hearts = deck.removeAll(isHeart);
+		
+		assertEquals(hearts.size(), suitSize);
+		assertEquals(deck.size(), initialSize-suitSize);
+		
+	}
+	
 	private static List<StandardCard> shortCardList(){
 		List<StandardCard> someCards = new ArrayList<>(4);
-		someCards.add(new StandardCard(SUIT.HEART, VALUE.ACE));
-		someCards.add(new StandardCard(SUIT.SPADE, VALUE.ACE));
-		someCards.add(new StandardCard(SUIT.CLUB, VALUE.ACE));
-		someCards.add(new StandardCard(SUIT.DIAMOND, VALUE.ACE));
+		for(SUIT suit: SUIT.values()){
+			someCards.add(new StandardCard(suit, VALUE.ACE));
+		}
+		
 		return someCards;
 	}
 	
