@@ -1,6 +1,6 @@
-package com.djayard.deck.proj.impl.standard;
+package com.djayard.deck.proj.standard;
 
-import static com.djayard.deck.proj.impl.standard.StandardCard.*;
+import static com.djayard.deck.proj.standard.StandardCard.*;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -14,7 +14,6 @@ import java.util.function.Predicate;
 import org.junit.Test;
 
 import com.djayard.deck.proj.Deck;
-
 
 public class StandardDeckTest {
 

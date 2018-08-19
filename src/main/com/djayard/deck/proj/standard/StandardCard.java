@@ -1,4 +1,4 @@
-package com.djayard.deck.proj.impl.standard;
+package com.djayard.deck.proj.standard;
 
 import com.djayard.deck.proj.Card;
 

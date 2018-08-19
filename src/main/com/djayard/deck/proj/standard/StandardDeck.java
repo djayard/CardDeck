@@ -1,6 +1,6 @@
-package com.djayard.deck.proj.impl.standard;
+package com.djayard.deck.proj.standard;
 
-import static com.djayard.deck.proj.impl.standard.StandardCard.*;
+import static com.djayard.deck.proj.standard.StandardCard.*;
 
 import java.util.Arrays;
 import java.util.Collection;
